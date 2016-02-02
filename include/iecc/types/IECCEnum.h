@@ -33,40 +33,7 @@
     #define __IECC_INCLUDE_IECC_TYPES_ENUM_DEFINE__
     
     //
-    @interface IECCEnum: IECCNamedType {
-        // Private share
-        @private
-          /**
-           *
-           */
-          NSMutableDictionary *values;
-          
-          /**
-           *
-           */
-          NSNumber *last_value;
-      };
-      
-      //
-      - (instancetype)init;
-      
-      /**
-       *
-       */
-      - (void)addValue: (NSString *)name as: (NSNumber *)value;
-      
-      /**
-       *
-       */
-      - (NSNumber *)objectForKey: (NSString *)name;
-      
-      //
-      - (NSUInteger)countByEnumeratingWithState: (NSFastEnumerationState *)state
-                                        objects: (id *)stackbuf
-                                          count: (NSUInteger)len;
-      
-      //
-      - (void)dealloc;
+    @interface IECCEnum: IECCNamedType
     @end
   #endif
 #endif

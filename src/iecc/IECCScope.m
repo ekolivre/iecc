@@ -21,17 +21,20 @@
 * You should have received a copy of the GNU General Public License along with *
 * this program. If not, see <http://www.gnu.org/licenses/>.                    *
 *******************************************************************************/
-#import "IECCBinder.h"
-// Header made by Bison:
-#import "./Parser.tmp.h"
+#import "IECCScope.h"
 
 //
-@implementation IECCBinder
+@implementation IECCScope
   // Init our object
   - (instancetype)init {
     if((self = super.init)) {
       // Setup variables
-      scope = IECCScope.new;
+      types = NSMutableDictionary.new;
+      declaring_enum = NO;
+      last_name = nil;
+      last_value = @(0);
+      enum_data = NSMutableDictionary.new;
+      is_enumeration = YES;
     };
     
     // As always...
@@ -43,50 +46,119 @@
                              as: (IECCDataType *)type
                          atLine: (int)line
   {
-    return [scope declareType: name as: type atLine: line];
+    assert("Internal compiler error." && name && type);
+    assert("Internal compiler error." &&
+      [type isKindOfClass: IECCDataType.class]);
+    [types setObject: @[type, @(line)] forKey: name.uppercaseString];
+    return type;
   };
   
   //
   - (__weak IECCDataType *)type: (NSString *)name {
-    return [scope type: name];
+    id obj = [[types objectForKey: name.uppercaseString]
+               objectAtIndex: 0
+             ];
+    
+    if([obj isKindOfClass: IECCDataType.class]) {
+      return obj;
+    };
+    
+    return nil;
   };
   
   //
   - (void)enterEnum {
-    [scope enterEnum];
+    assert("Internal compiler error." && declaring_enum == NO);
+    declaring_enum = YES;
   };
   
   //
   - (BOOL)insideEnum {
-    return scope.insideEnum;
+    return declaring_enum;
   };
   
   //
-  - (void)seemEnumName: (NSString *)name {
+  - (void)pushEnumName: (NSString *)name {
+    
     assert("Internal compiler error." && name);
-    [scope pushEnumName: name];
+    
+    [self privateUpdateEnumData];
+    
+    last_name = name;
   };
   
   //
-  - (void)seemEnumValue: (NSNumber *)number {
-    assert("Internal compiler error." && number);
-    [scope pushEnumValue: number];
+  - (void)pushEnumValue: (NSNumber *)number {
+    assert("Internal compiler error." && declaring_enum);
+    assert("Internal compiler error." && last_name);
+    
+    // Keep track of this value
+    last_value = number;
+    
+    // If we've set manually a value, we are NOT in an enum
+    is_enumeration = NO;
+  };
+  
+  //
+  - (void)privateUpdateEnumData {
+    if(last_name) {
+      assert("Internal compiler error." &&
+        [enum_data objectForKey: last_name.uppercaseString] == nil);
+      
+      printf("Binding %s to value %s\n",
+        last_name.uppercaseString.UTF8String,
+        last_value.description.UTF8String);
+      
+      [enum_data setObject: last_value forKey: last_name.uppercaseString];
+      
+      last_name = nil;
+      
+      last_value = @(last_value.intValue + 1);
+      
+    };
   };
   
   //
   - (NSArray *)enumValue: (NSString *)name {
-    assert("Internal compiler error." && name);
-    return [scope enumValue: name];
+    
+    [self privateUpdateEnumData];
+    
+    NSMutableArray *result = NSMutableArray.new.autorelease;
+    
+    if(declaring_enum) {
+      NSNumber *current = [enum_data objectForKey: name.uppercaseString];
+      if(current) {
+        printf("We have found our key [%s]!\n", name.description.UTF8String);
+        [result addObject: current];
+      };
+    };
+    
+    return result;
   };
   
   //
   - (IECCNamedType *)leaveEnum {
-    return scope.leaveEnum;
+    
+    assert(declaring_enum == YES);
+    [self privateUpdateEnumData];
+    
+    IECCNamedType *result = nil;
+    
+    if(is_enumeration) {
+      result = [IECCEnum.alloc initWithValues: enum_data];
+    } else {
+      result = [IECCNamedType.alloc initWithValues: enum_data];
+    };
+    
+    declaring_enum = NO;
+    is_enumeration = YES;
+    
+    return result;
   };
   
   // Cleanup memory
   - (void)dealloc {
-    [scope autorelease];
+    [types autorelease];
     [super dealloc];
   };
 @end

@@ -25,5 +25,18 @@
 #import "types/IECCEnum.h"
 
 @implementation IECCNamedType
+  //
+  - (instancetype)initWithValues: (NSDictionary *)values {
+    if((self = super.init)) {
+      
+    };
+    
+    // As always...
+    return self;
+  };
   
+  //
+  - (void)setElementType: (IECCAnyElementary *)type {
+    assert(!"TODO");
+  };
 @end

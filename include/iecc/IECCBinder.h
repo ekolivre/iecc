@@ -24,8 +24,7 @@
 #pragma once
 #import <Foundation/Foundation.h>
 #import "IECCDataType.h"
-
-// TODO: add contexts, for namespace lookup and stuff
+#import "IECCScope.h"
 
 /**
  * This class controls name binding throughout a source file.
@@ -40,20 +39,7 @@
 @interface IECCBinder: NSObject {
     // Private share
     @private
-      /**
-       *
-       */
-      NSMutableDictionary *dictionary;
-      
-      /**
-       *
-       */
-      NSString *current_enum;
-      
-      /**
-       *
-       */
-      NSMutableDictionary *enum_values;
+      IECCScope *scope;
   };
   
   /**
@@ -66,7 +52,7 @@
    */
   - (IECCDataType *)declareType: (NSString *)name
                              as: (IECCDataType *)type
-                         atLine: (int)pos;
+                         atLine: (int)line;
   
   /**
    *
@@ -74,22 +60,22 @@
   - (__weak IECCDataType *)type: (NSString *)name;
   
   //
-  - (void)enterEnum: (NSString *)name;
+  - (void)enterEnum;
   
   //
-  - (_Bool)isInsideEnum;
+  - (BOOL)insideEnum;
   
   //
   - (void)seemEnumName: (NSString *)name;
   
   //
-  - (void)setValue: (NSNumber *)value forEnumValue: (NSString *)name;
+  - (void)seemEnumValue: (NSNumber *)number;
   
   //
   - (NSArray *)enumValue: (NSString *)name;
   
   //
-  - (void)leaveEnum;
+  - (IECCNamedType *)leaveEnum;
   
   /**
    *

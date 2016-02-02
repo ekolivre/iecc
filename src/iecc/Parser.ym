@@ -54,6 +54,9 @@
   
   // Duck typing FTW! ;)
   #define YYSTYPE id
+  
+  //
+  #define TODO assert(!"TODO")
 }
 
 %{
@@ -85,6 +88,7 @@
 %parse-param {IECCBinder *binder}
 
 /* Helper */
+%token TOK_EOF 0 "end of file"
 %token TOK_TODO
 %token TOK_INVALID
 
@@ -281,7 +285,11 @@
 /*
 
 */
-translation_unit: POU_decl;
+translation_unit: POU_decl TOK_EOF
+                | TOK_EOF {
+                  yyerror(binder, "empty translation unit");
+                  YYERROR;
+                };
 
 /* Identifier, taken from table 2 of the standard */
 simple_identifier: TOK_IDENTIFIER {
@@ -614,25 +622,32 @@ subrange_set_value: /* empty */ {
                   };
 
 enum_type_decl: simple_identifier ':' {
-                [binder enterEnum: $1];
-              } enum_type_decl2 {
-                // First, leave our current enum
-                [binder leaveEnum];
+                  // As soon as the parser sees an '(' it will be sure we are
+                  // here; so alert the binder that we are defining a new enum
+                  [binder enterEnum];
+                } enum_type_decl2 {
+                // Make sure we didn't forget anything
+                
                 
                 // Enum or "type with named value" type declaration
-                printf("Binding an enum or named type!\n");
-                //~ $$ = [binder
-                  //~ declareType: $1
-                           //~ as: [$4 objectAtIndex: 0] // TODO: default value
-                       //~ atLine: @1.first_line
-                //~ ];
+                $$ = [binder
+                  declareType: $1
+                           as: [$4 objectAtIndex: 0] // TODO: default value
+                       atLine: @1.first_line
+                ];
+                printf("Binding an enum or named type! [%s]\n",
+                  [binder type: $1].description.UTF8String);
               };
 
-enum_type_decl2: elem_type_name_opt named_spec_init /* %dprec 10 */ {
-                 // TODO
+enum_type_decl2: elem_type_name_opt named_spec_init %dprec 10 {
+                 assert("Internal compiler error." && $2);
+                 //
+                 if($1) {
+                   [$2 setElementType: $1];
+                 };
                  $$ = $2;
                }
-               | enum_spec_init /* %dprec 50 */ {
+               | enum_spec_init %dprec 50 {
                  $$ = $1;
                };
 
@@ -643,7 +658,7 @@ named_spec_init: named_spec_init_type named_set_value {
 
 named_spec_init_type: '(' enum_value_spec_list ')' {
                       // Pass on our returned enum up
-                      $$ = $3;
+                      $$ = [binder leaveEnum];
                     };
 
 named_set_value: /* empty */ {
@@ -662,18 +677,19 @@ enum_spec_init: enum_spec_init_type named_set_value {
               };
 
 /*
-  We ignore plain enum enumerations here, as they are a subset of types with
-  named elements. For a better explanation why, please check the documentation
-  for the IECCEnum class. This rule will only match when a type alias is made.
-  
-  TODO: /\ refactor and remove message ;)
+  The standard gives the rules here; basically we should come this path when the
+  enumeration doesn't set any of its values manually (otherwise it is considered
+  a type with named values); we can't check the difference until its too late to
+  bind names, so instead we always parse as a type with named values, and decide
+  at the end if we were an enum (as this rule would be) or not.
+  We use The Lexer Hack instead.
 */
-enum_spec_init_type: /*'(' enum_value_list ')' {
+enum_spec_init_type: /* '(' enum_value_list ')' {
                      // Pass on our returned enum up
                      $$ = $3;
                    }
                    | */ enum_type_access {
-                     // We are just making a type alias
+                     // We are just making a type alias to a known enum
                      $$ = $1;
                    };
 
@@ -690,7 +706,7 @@ enum_value_spec_set_value: /* empty */ {
                          }
                          | TOK_SET constant_expr {
                            if($2) {
-                             $$ = $2;
+                             [binder seemEnumValue: $$ = $2];
                            } else {
                              // TODO: handle expression error
                              // Acts as if we hadn't set a value

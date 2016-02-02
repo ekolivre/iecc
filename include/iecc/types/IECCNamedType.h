@@ -22,19 +22,26 @@
 * this program. If not, see <http://www.gnu.org/licenses/>.                    *
 *******************************************************************************/
 //
+#import <Foundation/Foundation.h>
+
+//
 #ifndef __IECC_INCLUDE_IECC_TYPES_NAMED_TYPE_INCLUDE__
   #define __IECC_INCLUDE_IECC_TYPES_NAMED_TYPE_INCLUDE__
   #include "types/IECCAnyDerived.h"
+  #include "types/IECCAnyElementary.h"
 #endif
 
 //
 #ifndef __IECC_INCLUDE_IECC_TYPES_NAMED_TYPE_DEFINE__
   #ifdef __IECC_INCLUDE_IECC_TYPES_ANY_DERIVED_DEFINE__
-    #define __IECC_INCLUDE_IECC_TYPES_NAMED_TYPE_DEFINE__
-    
-    //
-    @interface IECCNamedType: IECCAnyDerived<NSFastEnumeration>
+    #ifdef __IECC_INCLUDE_IECC_TYPES_ANY_ELEMENTARY_DEFINE__
+      #define __IECC_INCLUDE_IECC_TYPES_NAMED_TYPE_DEFINE__
       
-    @end
+      //
+      @interface IECCNamedType: IECCAnyDerived<NSFastEnumeration>
+        - (instancetype)initWithValues: (NSDictionary *)values; 
+        - (void)setElementType: (IECCAnyElementary *)type;
+      @end
+    #endif
   #endif
 #endif

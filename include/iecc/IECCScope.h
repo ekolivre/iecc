@@ -21,9 +21,80 @@
 * You should have received a copy of the GNU General Public License along with *
 * this program. If not, see <http://www.gnu.org/licenses/>.                    *
 *******************************************************************************/
-#import "types/IECCEnum.h"
-#import "NSNumber+IECC.h"
+#pragma once
+#import <Foundation/Foundation.h>
+#import "IECCDataType.h"
 
-@implementation IECCEnum
+@interface IECCScope: NSObject {
+    @private
+      /**
+       *
+       */
+      BOOL declaring_enum;
+      
+      /**
+       *
+       */
+      NSMutableDictionary *types;
+      
+      /**
+       *
+       */
+      NSString *last_name;
+      
+      /**
+       *
+       */
+      NSNumber *last_value;
+      
+      /**
+       *
+       */
+      NSMutableDictionary *enum_data;
+      
+      /**
+       *
+       */
+      BOOL is_enumeration;
+  };
   
+  /**
+   *
+   */
+  - (instancetype)init;
+  
+  /**
+   *
+   */
+  - (IECCDataType *)declareType: (NSString *)name
+                             as: (IECCDataType *)type
+                         atLine: (int)line;
+  
+  /**
+   *
+   */
+  - (__weak IECCDataType *)type: (NSString *)name;
+  
+  //
+  - (void)enterEnum;
+  
+  //
+  - (BOOL)insideEnum;
+  
+  //
+  - (void)pushEnumName: (NSString *)name;
+  
+  //
+  - (void)pushEnumValue: (NSNumber *)number;
+  
+  //
+  - (NSArray *)enumValue: (NSString *)name;
+  
+  //
+  - (IECCNamedType *)leaveEnum;
+  
+  /**
+   *
+   */
+  - (void)dealloc;
 @end

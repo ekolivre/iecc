@@ -427,9 +427,6 @@ register_variable     ("%"R{direct_variable_size}?{identifier})
   eeeee                                 return TOK_LANG_SFC;
   fffff                                 return TOK_LANG_C;
   
-  /* Cause why not? */
-  TODO                                  return TOK_TODO;
-  
   /* Borrowed from the Structured Text
      language while we are in "mixed"
      mode */
@@ -476,7 +473,7 @@ register_variable     ("%"R{direct_variable_size}?{identifier})
   ","                                   return fix_enum(binder), ',';
   "^"                                   return '^';
   ";"                                   return ';';
-  ":="                                  return fix_enum(binder), TOK_SET;
+  ":="                                  return TOK_SET;
   ".."                                  return TOK_DOTDOT;
   "=>"                                  return TOK_FAT_ARROW;
 }
@@ -546,7 +543,7 @@ static int get_type_token(IECCDataType *type) {
     return TOK_SUBRANGE_TYPENAME;
   
   // Enum and data with named values data types...
-  if([type isKindOfClass: [IECCEnum class]])
+  if([type isKindOfClass: [IECCNamedType class]])
     return TOK_ENUM_TYPENAME;
   
   // Clean things up...
@@ -572,6 +569,8 @@ static int get_identifier_token(IECCBinder *binder) {
   if([value count]) {
     if([value count] == 1) {
       // Return it's NSNumber *value :)
+      
+      return TOK_ENUM_LITERAL;
     };
     
     // TODO: warn about ambiguos enum!
@@ -584,7 +583,7 @@ static int get_identifier_token(IECCBinder *binder) {
 };
 
 static void fix_enum(IECCBinder *binder) {
-  if([binder isInsideEnum]) {
+  if([binder insideEnum]) {
     [binder seemEnumName: yylast_identifier];
   };
 };
