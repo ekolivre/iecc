@@ -144,6 +144,7 @@
     
     IECCNamedType *result = nil;
     
+    // The type will take care of freeing the dictionary, hopefully
     if(is_enumeration) {
       result = [IECCEnum.alloc initWithValues: enum_data];
     } else {
@@ -152,6 +153,7 @@
     
     declaring_enum = NO;
     is_enumeration = YES;
+    enum_data = NSMutableDictionary.new;
     
     return result;
   };
@@ -159,6 +161,7 @@
   // Cleanup memory
   - (void)dealloc {
     [types autorelease];
+    [enum_data autorelease];
     [super dealloc];
   };
 @end

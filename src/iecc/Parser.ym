@@ -652,14 +652,12 @@ enum_type_decl2: elem_type_name_opt named_spec_init %dprec 10 {
                };
 
 named_spec_init: named_spec_init_type named_set_value {
-                 assert("Internal compiler error." && $1 && $2);
-                 $$ = @[$1, $2];
+                 assert("Internal compiler error." && $2);
+                 // Pass on our returned enum up
+                 $$ = @[[binder leaveEnum], $2];
                };
 
-named_spec_init_type: '(' enum_value_spec_list ')' {
-                      // Pass on our returned enum up
-                      $$ = [binder leaveEnum];
-                    };
+named_spec_init_type: '(' enum_value_spec_list ')';
 
 named_set_value: /* empty */ {
                  $$ = [NSNull null];
@@ -1644,7 +1642,10 @@ int main(int argc, char **argv) {
     IECCBinder *binder = IECCBinder.new;
     //~ @try {
       
-      yyparse(binder);
+      @autoreleasepool {
+        yyparse(binder);
+      };
+      
       [binder autorelease];
       
     //~ } @catch(id exception) {

@@ -567,14 +567,8 @@ static int get_identifier_token(IECCBinder *binder) {
   //
   id value = [binder enumValue: text];
   if([value count]) {
-    if([value count] == 1) {
-      // Return it's NSNumber *value :)
-      
-      return TOK_ENUM_LITERAL;
-    };
-    
-    // TODO: warn about ambiguos enum!
-    return TOK_INVALID;
+    yylval = value;
+    return TOK_ENUM_LITERAL;
   };
   
   //
