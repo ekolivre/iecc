@@ -60,16 +60,7 @@
   - (__weak IECCDataType *)type: (NSString *)name;
   
   //
-  - (void)enterEnum;
-  
-  //
-  - (BOOL)insideEnum;
-  
-  //
-  - (void)seemEnumName: (NSString *)name;
-  
-  //
-  - (void)seemEnumValue: (NSNumber *)number;
+  - (void)setEnumValue: (NSString *)name to: (NSNumber *)value;
   
   //
   - (NSArray *)enumValue: (NSString *)name;

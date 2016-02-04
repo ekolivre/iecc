@@ -30,27 +30,17 @@
       /**
        *
        */
-      BOOL declaring_enum;
-      
-      /**
-       *
-       */
       NSMutableDictionary *types;
       
       /**
        *
        */
-      NSString *last_name;
+      NSMutableDictionary *enum_data;
       
       /**
        *
        */
       NSNumber *last_value;
-      
-      /**
-       *
-       */
-      NSMutableDictionary *enum_data;
       
       /**
        *
@@ -76,16 +66,7 @@
   - (__weak IECCDataType *)type: (NSString *)name;
   
   //
-  - (void)enterEnum;
-  
-  //
-  - (BOOL)insideEnum;
-  
-  //
-  - (void)pushEnumName: (NSString *)name;
-  
-  //
-  - (void)pushEnumValue: (NSNumber *)number;
+  - (void)setEnumValue: (NSString *)name to: (NSNumber *)value;
   
   //
   - (NSArray *)enumValue: (NSString *)name;

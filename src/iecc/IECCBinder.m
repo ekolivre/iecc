@@ -52,25 +52,8 @@
   };
   
   //
-  - (void)enterEnum {
-    [scope enterEnum];
-  };
-  
-  //
-  - (BOOL)insideEnum {
-    return scope.insideEnum;
-  };
-  
-  //
-  - (void)seemEnumName: (NSString *)name {
-    assert("Internal compiler error." && name);
-    [scope pushEnumName: name];
-  };
-  
-  //
-  - (void)seemEnumValue: (NSNumber *)number {
-    assert("Internal compiler error." && number);
-    [scope pushEnumValue: number];
+  - (void)setEnumValue: (NSString *)name to: (NSNumber *)value {
+    [scope setEnumValue: name to: value];
   };
   
   //

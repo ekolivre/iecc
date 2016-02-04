@@ -44,22 +44,12 @@
   /**
    *
    */
-  static NSString *yylast_identifier = nil;
-  
-  /**
-   *
-   */
   static void yy_user_action(void);
   
   /**
    * TODO: doc me (it will set yylval!)
    */
   static int get_identifier_token(IECCBinder *);
-  
-  /**
-   *
-   */
-  static void fix_enum(IECCBinder *binder);
 %}
 
 /* Options */
@@ -451,9 +441,6 @@ register_variable     ("%"R{direct_variable_size}?{identifier})
      the standard; had to be in the end
      after we already lexed keywords */
   {identifier}                          {
-                                          // Box and save it (used for enums)
-                                          yylast_identifier = @(yytext);
-                                          
                                           // Then check if it's declared already
                                           return get_identifier_token(binder);
                                         };
@@ -469,8 +456,8 @@ register_variable     ("%"R{direct_variable_size}?{identifier})
   "]"                                   return ']';
   ":"                                   return ':';
   "("                                   return '(';
-  ")"                                   return fix_enum(binder), ')';
-  ","                                   return fix_enum(binder), ',';
+  ")"                                   return ')';
+  ","                                   return ',';
   "^"                                   return '^';
   ";"                                   return ';';
   ":="                                  return TOK_SET;
@@ -574,10 +561,4 @@ static int get_identifier_token(IECCBinder *binder) {
   //
   yylval = text;
   return TOK_IDENTIFIER;
-};
-
-static void fix_enum(IECCBinder *binder) {
-  if([binder insideEnum]) {
-    [binder seemEnumName: yylast_identifier];
-  };
 };

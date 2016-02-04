@@ -30,10 +30,8 @@
     if((self = super.init)) {
       // Setup variables
       types = NSMutableDictionary.new;
-      declaring_enum = NO;
-      last_name = nil;
-      last_value = @(0);
       enum_data = NSMutableDictionary.new;
+      last_value = @(0);
       is_enumeration = YES;
     };
     
@@ -67,70 +65,28 @@
   };
   
   //
-  - (void)enterEnum {
-    assert("Internal compiler error." && declaring_enum == NO);
-    declaring_enum = YES;
-  };
-  
-  //
-  - (BOOL)insideEnum {
-    return declaring_enum;
-  };
-  
-  //
-  - (void)pushEnumName: (NSString *)name {
+  - (void)setEnumValue: (NSString *)name to: (NSNumber *)value {
     
-    assert("Internal compiler error." && name);
-    
-    [self privateUpdateEnumData];
-    
-    last_name = name;
-  };
-  
-  //
-  - (void)pushEnumValue: (NSNumber *)number {
-    assert("Internal compiler error." && declaring_enum);
-    assert("Internal compiler error." && last_name);
-    
-    // Keep track of this value
-    last_value = number;
-    
-    // If we've set manually a value, we are NOT in an enum
-    is_enumeration = NO;
-  };
-  
-  //
-  - (void)privateUpdateEnumData {
-    if(last_name) {
-      assert("Internal compiler error." &&
-        [enum_data objectForKey: last_name.uppercaseString] == nil);
-      
-      printf("Binding %s to value %s\n",
-        last_name.uppercaseString.UTF8String,
-        last_value.description.UTF8String);
-      
-      [enum_data setObject: last_value forKey: last_name.uppercaseString];
-      
-      last_name = nil;
-      
-      last_value = @(last_value.intValue + 1);
-      
+    if(value) {
+      last_value = value;
     };
+    
+    [enum_data setObject: last_value forKey: name.uppercaseString];
+    
+    last_value = @(last_value.intValue + 1);
+    
   };
   
   //
   - (NSArray *)enumValue: (NSString *)name {
     
-    [self privateUpdateEnumData];
+    //~ [self privateUpdateEnumData];
     
     NSMutableArray *result = NSMutableArray.new.autorelease;
     
-    if(declaring_enum) {
-      NSNumber *current = [enum_data objectForKey: name.uppercaseString];
-      if(current) {
-        printf("We have found our key [%s]!\n", name.description.UTF8String);
-        [result addObject: current];
-      };
+    NSNumber *current = [enum_data objectForKey: name.uppercaseString];
+    if(current) {
+      [result addObject: current];
     };
     
     return result;
@@ -139,8 +95,8 @@
   //
   - (IECCNamedType *)leaveEnum {
     
-    assert(declaring_enum == YES);
-    [self privateUpdateEnumData];
+    //~ assert(declaring_enum == YES);
+    //~ [self privateUpdateEnumData];
     
     IECCNamedType *result = nil;
     
@@ -151,9 +107,9 @@
       result = [IECCNamedType.alloc initWithValues: enum_data];
     };
     
-    declaring_enum = NO;
     is_enumeration = YES;
     enum_data = NSMutableDictionary.new;
+    last_value = @(0);
     
     return result;
   };

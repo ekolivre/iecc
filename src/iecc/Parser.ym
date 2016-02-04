@@ -621,18 +621,14 @@ subrange_set_value: /* empty */ {
                     $$ = $2;
                   };
 
-enum_type_decl: simple_identifier ':' {
-                  // As soon as the parser sees an '(' it will be sure we are
-                  // here; so alert the binder that we are defining a new enum
-                  [binder enterEnum];
-                } enum_type_decl2 {
+enum_type_decl: simple_identifier ':' enum_type_decl2 {
                 // Make sure we didn't forget anything
                 
                 
                 // Enum or "type with named value" type declaration
                 $$ = [binder
                   declareType: $1
-                           as: [$4 objectAtIndex: 0] // TODO: default value
+                           as: [$3 objectAtIndex: 0] // TODO: default value
                        atLine: @1.first_line
                 ];
                 printf("Binding an enum or named type! [%s]\n",
@@ -691,28 +687,34 @@ enum_spec_init_type: /* '(' enum_value_list ')' {
                      $$ = $1;
                    };
 
-/* Used for plain enums, not types with named values, we don't set values! */
+/* Would be for plain enums, not types with named values, we don't set values! */
 enum_value_list: simple_identifier
                | enum_value_list ',' simple_identifier;
 
 enum_value_spec: simple_identifier enum_value_spec_set_value {
-                 // TODO
+                 [binder setEnumValue: $1 to: $2];
                };
 
 enum_value_spec_set_value: /* empty */ {
-                           $$ = [NSNull null];
+                           $$ = nil;
                          }
                          | TOK_SET constant_expr {
                            if($2) {
-                             [binder seemEnumValue: $$ = $2];
+                             $$ = $2;
                            } else {
                              // TODO: handle expression error
                              // Acts as if we hadn't set a value
-                             $$ = [NSNull null];
+                             $$ = nil;
                            };
                          };
 
-enum_value: TOK_ENUM_LITERAL;
+enum_value: TOK_ENUM_LITERAL {
+                               if([$1 count] == 1) {
+                                 $$ = [$1 objectAtIndex: 0];
+                               } else {
+                                 TODO;
+                               };
+                             };
 
 array_type_decl: simple_identifier ':' array_spec_init;
 
@@ -1599,6 +1601,9 @@ constant_expr: constant_expr TOK_OR constant_expr {
                $$ = $2;
              }
              | numeric_literal {
+               $$ = $1;
+             }
+             | enum_value {
                $$ = $1;
              };
 
